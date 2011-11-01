@@ -9,8 +9,31 @@ Capybara.app_host = 'https://www.gotimeforce.com'
 
 include Capybara::DSL
 
-# TODO: 1265
+def append_jquery
+  page.execute_script <<-JAVASCRIPT
+    var jQ = document.createElement('script');
+    jQ.language = 'JavaScript';
+    jQ.type = 'text/javascript';
+    jQ.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js';
+    document.getElementsByTagName('body')[0].appendChild(jQ);
+  JAVASCRIPT
+end
 
+def mark_links
+  page.execute_script <<-JAVASCRIPT
+    $(function() {
+      $('.TCActiveDayCell').parent().children('th').each(function(index, elem) {
+        if($(elem).text() != 'S') {
+          var clickable = $( $('a.TCDayNormalBold, a.TCDayNormalBoldModified')[index] );
+          
+          if(!clickable.hasClass('a.TCDayNormalBoldModified') && clickable.text() == '0.00') {
+            clickable.addClass('weekday-hours-link');
+          }
+        }
+      });
+    });
+  JAVASCRIPT
+end
 
 def eat_it_timeforce
   username = ''
@@ -23,106 +46,22 @@ def eat_it_timeforce
   fill_in 'CompanyCode', :with => 'adler'
   click_on 'Login'
   
-  #
-  # Click on 1st Monday
-  #
-  
-  page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[3]/a").click
-  # page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[3]/span/a").click
-  
-  within_window(page.driver.browser.window_handles.last) do
-    find("input[@class='submitsmallstyle']").click
+  while true do
+    append_jquery
+    mark_links
+    weekday = page.find('.weekday-hours-link') rescue nil
+    break unless weekday
+    weekday.click
+    
     within_window(page.driver.browser.window_handles.last) do
-      find("input[@id='enterhours1']").set(true)
+      add_hours = page.find('.headerRow td:nth-child(1) .submitsmallstyle')
+      add_hours.click
       fill_in 'thetotalhr', :with => '7'
       select funding_source, :from => 'job'
-      find(:xpath, "//table/tbody/tr[14]/td/input").click
-    end
-    find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
-  end
-  
-  #
-  # Click on 1st Tuesday
-  #
-  page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[4]/span/a").click
-  
-  within_window(page.driver.browser.window_handles.last) do
-    find("input[@class='submitsmallstyle']").click
-    within_window(page.driver.browser.window_handles.last) do
-      find("input[@id='enterhours1']").set(true)
-      fill_in 'thetotalhr', :with => '7'
-      select funding_source, :from => 'job'
-      find(:xpath, "//table/tbody/tr[14]/td/input").click
-    end
-    find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
-  end
-  
-  #
-  # Click on 1st Wednesday
-  #
-  page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[5]/span/a").click
-  
-  within_window(page.driver.browser.window_handles.last) do
-    find("input[@class='submitsmallstyle']").click
-    within_window(page.driver.browser.window_handles.last) do
-      find("input[@id='enterhours1']").set(true)
-      fill_in 'thetotalhr', :with => '7'
-      select funding_source, :from => 'job'
-      find(:xpath, "//table/tbody/tr[14]/td/input").click
-    end
-    find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
-  end
-  
-  #
-  # Click on 1st Thursday
-  #
-  page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[6]/span/a").click
-  
-  within_window(page.driver.browser.window_handles.last) do
-    find("input[@class='submitsmallstyle']").click
-    within_window(page.driver.browser.window_handles.last) do
-      find("input[@id='enterhours1']").set(true)
-      fill_in 'thetotalhr', :with => '7'
-      select funding_source, :from => 'job'
-      find(:xpath, "//table/tbody/tr[14]/td/input").click
-    end
-    find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
-  end
-  
-  #
-  # Click on 1st Friday
-  #
-  page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[7]/span/a").click
-  
-  within_window(page.driver.browser.window_handles.last) do
-    find("input[@class='submitsmallstyle']").click
-    within_window(page.driver.browser.window_handles.last) do
-      find("input[@id='enterhours1']").set(true)
-      fill_in 'thetotalhr', :with => '7'
-      select funding_source, :from => 'job'
-      find(:xpath, "//table/tbody/tr[14]/td/input").click
-    end
-    find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
-  end
-  
-  #
-  # => Workin' hard in week 2
-  #
-  for i in 10..14 do
-    page.find(:xpath, "html/body/table[4]/tbody/tr[9]/td[#{i}]/span/a").click
-
-    within_window(page.driver.browser.window_handles.last) do
-      find("input[@class='submitsmallstyle']").click
-      within_window(page.driver.browser.window_handles.last) do
-        find("input[@id='enterhours1']").set(true)
-        fill_in 'thetotalhr', :with => '7'
-        select funding_source, :from => 'job'
-        find(:xpath, "//table/tbody/tr[14]/td/input").click
-      end
-      find(:xpath, "//table[1]/tbody/tr/td[3]/input").click
+      submit_button = page.find('.headerRow input')
+      submit_button.click
     end
   end
-
 end
 
 eat_it_timeforce
