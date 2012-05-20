@@ -38,7 +38,8 @@ end
 def eat_it_timeforce
   username = ''
   password = ''
-  funding_source = ''
+  department = 'Adler Planetarium'
+  funding_source = 'Zooniverse 1265'
 
   visit '/qqest/login/login.asp'
   fill_in 'username', :with => username
@@ -57,9 +58,12 @@ def eat_it_timeforce
       add_hours = page.find('.headerRow td:nth-child(1) .submitsmallstyle')
       add_hours.click
       fill_in 'thetotalhr', :with => '7'
+      select department, :from => 'department'
       select funding_source, :from => 'job'
       submit_button = page.find('.headerRow input')
       submit_button.click
+      close_box = page.find('.headerRow td:nth-child(3) .submitsmallstyle')
+      close_box.click
     end
   end
 end
