@@ -39,7 +39,7 @@ def eat_it_timeforce
   username = ''
   password = ''
   department = 'Adler Planetarium'
-  funding_source = 'Zooniverse 1265'
+  funding_source = ''
 
   visit '/qqest/login/login.asp'
   fill_in 'username', :with => username
