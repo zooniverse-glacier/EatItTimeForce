@@ -35,11 +35,8 @@ def mark_links
   JAVASCRIPT
 end
 
-def eat_it_timeforce
-  username = ''
-  password = ''
+def eat_it_timeforce(username, password, funding_source)
   department = 'Adler Planetarium'
-  funding_source = ''
 
   visit '/qqest/login/login.asp'
   fill_in 'username', :with => username
@@ -68,4 +65,4 @@ def eat_it_timeforce
   end
 end
 
-eat_it_timeforce
+eat_it_timeforce ARGV[0], ARGV[1], ARGV[2]
